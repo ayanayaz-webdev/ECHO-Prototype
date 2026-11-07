@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ECHO</title>
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+
+    <div id="hud">
+      <div id="crosshair"></div>
+      <div id="hitmarker"></div>
+      <div id="zone"></div>
+
+      <div id="objective">
+        <span class="objective-label">Current objective</span>
+        <span id="objective-title"></span>
+        <span id="objective-desc"></span>
+        <span id="objective-loc"></span>
+      </div>
+      <div id="marker"><span id="marker-dist"></span></div>
+
+      <div id="subtitle"><span id="subtitle-speaker"></span><span id="subtitle-text"></span></div>
+      <div id="prompt"></div>
+      <div id="progress"><div id="progress-label"></div><div id="progress-track"><div id="progress-fill"></div></div></div>
+      <div id="panel"><div id="panel-title"></div><div id="panel-lines"></div></div>
+
+      <div id="health"><span class="hud-label">Health</span><div id="health-track"><div id="health-fill"></div></div></div>
+      <div id="ammo"><span id="ammo-name"></span><span id="ammo-count"></span></div>
+      <div id="credential">Access: Level 4</div>
+
+      <div id="center-msg"></div>
+      <div id="vignette"></div>
+      <div id="lockdown-tint"></div>
+      <div id="title-card"><div id="title-main"></div><div id="title-sub"></div></div>
+      <pre id="debug" hidden></pre>
+    </div>
+
+    <div id="death" class="screen hidden">
+      <div class="panel">
+        <h2>Signal lost</h2>
+        <p class="tagline">Daniel Cross is down.</p>
+        <button id="retry" type="button">Restart checkpoint</button>
+      </div>
+    </div>
+
+    <div id="complete" class="screen hidden">
+      <div class="panel">
+        <h2 id="complete-title">Mission complete</h2>
+        <p id="complete-mission" class="tagline"></p>
+        <div id="complete-items"></div>
+        <div id="complete-ending"></div>
+        <div id="complete-teaser"></div>
+        <button id="replay" type="button" hidden>Play again</button>
+      </div>
+    </div>
+
+    <div id="overlay">
+      <div class="panel">
+        <h1>ECHO</h1>
+        <p class="tagline">Your past is the most dangerous enemy.</p>
+        <button id="start" type="button">Click to enter the facility</button>
+        <table class="controls">
+          <tr><td>W A S D</td><td>Move</td></tr>
+          <tr><td>Mouse</td><td>Look</td></tr>
+          <tr><td>Left mouse</td><td>Fire</td></tr>
+          <tr><td>Right mouse</td><td>Aim</td></tr>
+          <tr><td>R</td><td>Reload</td></tr>
+          <tr><td>E</td><td>Interact</td></tr>
+          <tr><td>F</td><td>Flashlight</td></tr>
+          <tr><td>Esc</td><td>Pause</td></tr>
+          <tr><td>F3</td><td>Debug info</td></tr>
+          <tr><td>[ and ]</td><td>Exposure down / up</td></tr>
+          <tr><td>B</td><td>Brightness test</td></tr>
+        </table>
+        <pre id="error" hidden></pre>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
