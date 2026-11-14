@@ -1,12 +1,14 @@
 import { Weapon, RIFLE_M4A1 } from './Weapon.js';
 import { WeaponView } from './WeaponView.js';
+import { loadM4 } from './WeaponAsset.js';
 import { rayBoxes, rayCylinder } from '../systems/Ballistics.js';
+import * as THREE from 'three';
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 // Player weapon inventory, shooting, reloading and the first-person view.
 export class WeaponSystem {
-  constructor({ camera, player, input, events, audio, enemies, level, tracers }) {
+  constructor({ scene, camera, player, input, events, audio, enemies, level, tracers }) {
     Object.assign(this, { camera, player, input, events, audio, enemies, level, tracers });
     this.weapon = null;
     this.view = new WeaponView(level.unitBox);
@@ -20,6 +22,24 @@ export class WeaponSystem {
     this.swayX = 0;
     this.swayY = 0;
     this.emptyClicked = false;
+    this.bloom = 0;   // accuracy gets worse the longer you hold the trigger
+    this.lower = 0;   // 0..1, how much the weapon is lowered because of a wall in front
+    this._v = new THREE.Vector3();
+
+    // Load YOUR uploaded model once. The view shows it as soon as it is ready.
+    loadM4(scene)
+      .then(() => {
+        this.view.attach();
+        if (this.weapon) this.view.root.visible = true;
+      })
+      .catch((err) => {
+        console.error('Weapon model failed to load', err);
+        const box = document.getElementById('error');
+        if (box) {
+          box.hidden = false;
+          box.textContent = 'Weapon model failed to load (public/models/M4Colt.glb):\n' + err;
+        }
+      });
   }
 
   get hasWeapon() {
@@ -28,7 +48,7 @@ export class WeaponSystem {
 
   give(def = RIFLE_M4A1) {
     this.weapon = new Weapon(def);
-    this.view.root.visible = true;
+    this.view.root.visible = this.view.ready;
     this.equip = 0;
     this.events.emit('weapon:acquired', { id: def.id, name: def.name });
   }
@@ -64,13 +84,24 @@ export class WeaponSystem {
       this.emptyClicked = false;
     }
 
+    this.bloom = Math.max(0, this.bloom - dt * 1.6);
     this.kick = Math.max(0, this.kick - dt * 9);
     this.flash = Math.max(0, this.flash - dt);
     this.equip = Math.min(1, this.equip + dt * 2.2);
     this.swayX += (clamp(-input.mouseDX * 0.00025, -0.03, 0.03) - this.swayX) * Math.min(1, dt * 8);
     this.swayY += (clamp(input.mouseDY * 0.00025, -0.03, 0.03) - this.swayY) * Math.min(1, dt * 8);
 
+    // Lower the weapon when a wall is close in front of the camera so it does not poke through.
+    const p = this.player;
+    const cp = Math.cos(p.pitch);
+    const wall = rayBoxes(p.position.x, p.eyeY, p.position.z, -Math.sin(p.yaw) * cp, Math.sin(p.pitch), -Math.cos(p.yaw) * cp, 1.0, this.level.colliders);
+    const lowerTarget = wall && wall.kind === 'wall' ? clamp((0.85 - wall.t) / 0.5, 0, 1) : 0;
+    this.lower += (lowerTarget - this.lower) * Math.min(1, dt * 10);
+
     this.view.update({
+      dt,
+      lower: this.lower,
+      bobX: Math.cos(this.player.bobTime) * 0.004 * this.player.bobBlend,
       ads: this.ads,
       kick: this.kick,
       reload: w.reloadProgress,
@@ -86,7 +117,10 @@ export class WeaponSystem {
     const w = this.weapon;
     const def = w.def;
     const p = this.player;
-    const spread = def.spreadHip + (def.spreadAds - def.spreadHip) * this.ads;
+    // ADS is far more accurate, but never perfect: moving and sustained fire widen the spread.
+    const moveFactor = p.moving ? 1.6 : 1;
+    const spread = (def.spreadHip + (def.spreadAds - def.spreadHip) * this.ads) * moveFactor * (1 + this.bloom);
+    this.bloom = Math.min(1, this.bloom + 0.18);
     const yaw = p.yaw + (Math.random() - 0.5) * 2 * spread;
     const pitch = p.pitch + (Math.random() - 0.5) * 2 * spread;
     const cp = Math.cos(pitch);
@@ -110,9 +144,12 @@ export class WeaponSystem {
     }
 
     // Tracer starts at the muzzle (slightly right of and below the camera).
-    const rx = Math.cos(p.yaw);
-    const rz = -Math.sin(p.yaw);
-    const start = { x: o.x + dx * 0.7 + rx * 0.12, y: o.y + dy * 0.7 - 0.1, z: o.z + dz * 0.7 + rz * 0.12 };
+    let start;
+    if (this.view.muzzleWorld(this._v)) {
+      start = { x: this._v.x, y: this._v.y, z: this._v.z }; // the real muzzle of the uploaded model
+    } else {
+      start = { x: o.x + dx * 0.7, y: o.y + dy * 0.7 - 0.1, z: o.z + dz * 0.7 };
+    }
     const end = { x: o.x + dx * hitT, y: o.y + dy * hitT, z: o.z + dz * hitT };
     this.tracers.tracer(start, end);
 

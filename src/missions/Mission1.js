@@ -170,7 +170,7 @@ export function createMission1(ctx) {
     enabled: () => stageId() === 'power', onInteract: restorePower,
   });
   interaction.add({
-    pos: { x: 11.0, z: -10 }, radius: 2.4, prompt: 'E — Collect Weapon',
+    pos: { x: 11.0, z: -10 }, radius: 2.4, prompt: 'Press E to collect weapon',
     enabled: () => stageId() === 'armory', onInteract: collectWeapon,
   });
   interaction.add({
@@ -180,7 +180,7 @@ export function createMission1(ctx) {
       S.ammoTaken = true;
       weapons.addAmmo(60);
       audio.pickup();
-      hud.centerMessage('+60 rounds', 1.8);
+      hud.notify('+60 rounds');
     },
   });
   interaction.add({
@@ -260,8 +260,10 @@ export function createMission1(ctx) {
 
   function collectWeapon() {
     S.armed = true;
-    level.rackRifle.visible = false;
+    level.rackMount.visible = false; // the rifle comes off the rack
+    level.rackGlow.visible = false;
     audio.pickup();
+    hud.notify('Collected: M4A1 carbine (30 / 90)', 4);
     daniel('M4A1. Still in working order. Not what I expected to find in an abandoned building.');
     weapons.give(); // announces weapon:acquired, which advances the objective
   }

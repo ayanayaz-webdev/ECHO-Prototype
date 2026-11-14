@@ -1,15 +1,16 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { quality } from './Device.js';
 
 // Creates the renderer, scene and camera. Everything visual hangs off these three objects.
 export function createRenderer(canvas) {
   const renderer = new THREE.WebGLRenderer({
     canvas,
-    antialias: true,
+    antialias: quality.antialias,
     powerPreference: 'high-performance',
   });
-  // Capped pixel ratio keeps integrated graphics (UHD 620) comfortable.
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
+  // Capped pixel ratio keeps integrated graphics (UHD 620) and phones comfortable.
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, quality.pixelRatioStart));
   renderer.setSize(window.innerWidth, window.innerHeight, false);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
@@ -28,10 +29,20 @@ export function createRenderer(canvas) {
   const camera = new THREE.PerspectiveCamera(
     60,
     window.innerWidth / window.innerHeight,
-    0.08,
+    0.05,
     600
   );
   scene.add(camera); // camera must live in the scene so the flashlight attached to it works
+
+  // Phones sometimes drop the graphics context (low memory, app switching). Tell the player.
+  canvas.addEventListener('webglcontextlost', (e) => {
+    e.preventDefault();
+    const box = document.getElementById('error');
+    if (box) {
+      box.hidden = false;
+      box.textContent = 'The graphics context was lost (the device ran out of graphics memory). Please reload the page.';
+    }
+  });
 
   window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight, false);

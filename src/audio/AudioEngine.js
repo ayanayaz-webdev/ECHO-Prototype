@@ -21,6 +21,7 @@ export class AudioEngine {
     } catch (e) {
       return;
     }
+    if (this.ctx.resume) this.ctx.resume(); // iPhones start the audio context suspended
     const c = this.ctx;
     this.master = c.createGain();
     this.master.gain.value = 0.8;

@@ -2,7 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#05070c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>ECHO</title>
   </head>
   <body>
@@ -29,6 +33,7 @@
       <div id="health"><span class="hud-label">Health</span><div id="health-track"><div id="health-fill"></div></div></div>
       <div id="ammo"><span id="ammo-name"></span><span id="ammo-count"></span></div>
       <div id="credential">Access: Level 4</div>
+      <div id="notify"></div>
 
       <div id="center-msg"></div>
       <div id="vignette"></div>
@@ -36,6 +41,21 @@
       <div id="title-card"><div id="title-main"></div><div id="title-sub"></div></div>
       <pre id="debug" hidden></pre>
     </div>
+
+
+    <div id="touch">
+      <div id="joy-zone"></div>
+      <div id="look-zone"></div>
+      <div id="joy-base"><div id="joy-knob"></div></div>
+      <button id="btn-pause" type="button" aria-label="Pause">II</button>
+      <button id="btn-flash" type="button" aria-label="Flashlight">Light</button>
+      <button id="btn-reload" type="button" aria-label="Reload">Reload</button>
+      <button id="btn-ads" type="button" aria-label="Aim">Aim</button>
+      <button id="btn-use" type="button" aria-label="Use">Use</button>
+      <button id="btn-fire" type="button" aria-label="Fire">Fire</button>
+    </div>
+
+    <div id="rotate"><p>Rotate your device to landscape to play.</p></div>
 
     <div id="death" class="screen hidden">
       <div class="panel">
@@ -61,7 +81,7 @@
         <h1>ECHO</h1>
         <p class="tagline">Your past is the most dangerous enemy.</p>
         <button id="start" type="button">Click to enter the facility</button>
-        <table class="controls">
+        <table class="controls desktop-help">
           <tr><td>W A S D</td><td>Move</td></tr>
           <tr><td>Mouse</td><td>Look</td></tr>
           <tr><td>Left mouse</td><td>Fire</td></tr>
@@ -74,6 +94,15 @@
           <tr><td>[ and ]</td><td>Exposure down / up</td></tr>
           <tr><td>B</td><td>Brightness test</td></tr>
         </table>
+        <table class="controls touch-help">
+          <tr><td>Left thumb</td><td>Walk</td></tr>
+          <tr><td>Right thumb</td><td>Look</td></tr>
+          <tr><td>Fire</td><td>Hold to shoot</td></tr>
+          <tr><td>Aim</td><td>Tap to aim, tap again to stop</td></tr>
+          <tr><td>Use</td><td>Appears next to things you can use</td></tr>
+          <tr><td>II</td><td>Pause</td></tr>
+        </table>
+        <p class="touch-help hint">Tip: on iPhone, use Share, then Add to Home Screen, to play full screen.</p>
         <pre id="error" hidden></pre>
       </div>
     </div>

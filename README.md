@@ -19,3 +19,18 @@ Project layout (src/):
   world/      Level, Props, Lighting, Materials, Skyline, Collision
   player/     Player (movement, health, recoil, flashlight)
   ui/         HUD
+
+Weapon model
+  public/models/M4Colt.glb is an optimised copy of the uploaded M4Colt.glb (geometry, UVs and
+  materials unchanged, embedded 4K textures resized to 1-2K: 127 MB -> 3.5 MB).
+  src/weapons/m4Config.js holds every number that places the model in the game (scale, rotation,
+  hip position, ADS eye relief, muzzle and sight anchors).
+
+Mobile (phones and tablets, landscape)
+  Touch controls appear automatically on touch devices (src/core/Device.js decides).
+  Left thumb walks, right thumb looks, Fire (hold), Aim (tap), Reload, Use (appears only next to
+  something usable), Light, and II to pause. The game pauses when you switch apps.
+  Phones start at a lower resolution with no anti-aliasing and 4 real-time lights, and the
+  resolution adapts to hold the frame rate.
+  Test on a desktop by adding ?touch=1 to the address. Add ?debug=1 to see FPS on screen.
+  Phone on the same Wi-Fi: run "npm run dev", then open the "Network" address Vite prints.

@@ -127,17 +127,17 @@ export class Player {
     }
 
     // Keyboard movement
-    const forward = (input.isDown('KeyW') ? 1 : 0) - (input.isDown('KeyS') ? 1 : 0);
-    const strafe = (input.isDown('KeyD') ? 1 : 0) - (input.isDown('KeyA') ? 1 : 0);
+    const mv = input.getMove(); // keyboard and/or touch joystick
+    const len = Math.hypot(mv.forward, mv.strafe);
     let moving = false;
 
-    if (forward !== 0 || strafe !== 0) {
-      const len = Math.hypot(forward, strafe); // keeps diagonal speed equal to straight speed
-      const f = forward / len;
-      const s = strafe / len;
+    if (len > 0.001) {
+      const f = mv.forward / len; // normalised, so diagonal speed equals straight speed
+      const s = mv.strafe / len;
       const sin = Math.sin(this.yaw);
       const cos = Math.cos(this.yaw);
-      const speed = WALK_SPEED * (this.ads ? 0.6 : 1);
+      // A half-pushed joystick walks slower; keyboard is always full speed.
+      const speed = WALK_SPEED * (this.ads ? 0.6 : 1) * Math.min(1, len);
 
       this.position.x += (-sin * f + cos * s) * speed * dt;
       this.position.z += (-cos * f - sin * s) * speed * dt;

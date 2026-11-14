@@ -6,6 +6,8 @@ import { WeaponSystem } from '../weapons/WeaponSystem.js';
 import { DoorManager } from '../systems/Doors.js';
 import { Interaction } from '../systems/Interaction.js';
 import { createMission1 } from '../missions/Mission1.js';
+import { loadM4, makeM4 } from '../weapons/WeaponAsset.js';
+import { M4 } from '../weapons/m4Config.js';
 
 // Creates the gameplay systems (weapons, enemies, doors, interaction, mission) and updates
 // them each frame. Game.js only has to create this once and call update().
@@ -17,10 +19,18 @@ export class Gameplay {
     this.tracers = new Tracers(scene, level.unitBox);
     this.nav = new Nav(level.colliders);
     this.enemies = new EnemyManager({ scene, level, player, audio, events, tracers: this.tracers, nav: this.nav });
-    this.weapons = new WeaponSystem({ camera, player, input, events, audio, enemies: this.enemies, level, tracers: this.tracers });
+    this.weapons = new WeaponSystem({ scene, camera, player, input, events, audio, enemies: this.enemies, level, tracers: this.tracers });
     this.doors = new DoorManager(level, audio);
     this.interaction = new Interaction();
     this.hologram = new Hologram({ scene, unitBox: level.unitBox, level, audio });
+
+    // The same loaded model also hangs on the armory rack (shared geometry and textures, no second load).
+    loadM4(scene).then(() => {
+      const inst = makeM4();
+      if (!inst) return;
+      inst.rig.rotation.y = M4.rack.yaw;
+      level.rackMount.add(inst.rig);
+    });
 
     this.mission = createMission1({
       events, hud, audio, level, player, weapons: this.weapons, enemies: this.enemies, lights,
@@ -49,7 +59,7 @@ export class Gameplay {
   _onDeath() {
     this.state = 'dead';
     this.weapons.view.root.visible = false;
-    if (document.exitPointerLock) document.exitPointerLock();
+    this.input.releaseLock();
     this.hud.showDeath(() => this.retry());
   }
 
@@ -63,7 +73,7 @@ export class Gameplay {
 
   _onComplete() {
     this.state = 'complete';
-    if (document.exitPointerLock) document.exitPointerLock();
+    this.input.releaseLock();
   }
 
   update(dt, active) {
@@ -94,6 +104,7 @@ export class Gameplay {
     hud.tick(dt);
     hud.setHealth(player.health, player.maxHealth);
     hud.setWeapon(this.weapons.weapon);
+    hud.setAds(this.weapons.ads > 0.5);
     if (this.camera.projectionMatrix) hud.updateMarker(this.camera, player);
     this.audio.setListener(player.position, player.yaw, player.pitch);
   }

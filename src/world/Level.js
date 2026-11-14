@@ -40,7 +40,8 @@ export class Level {
     this.powerScreens = []; // screens that stay dark until power is restored
     this.powerPanels = [];  // ceiling lights that stay off until power is restored
     this.powered = false;
-    this.rackRifle = null;  // the rifle on the armory rack
+    this.rackMount = null;  // where the rifle model hangs in the armory
+    this.rackGlow = null;   // pulsing highlight behind it
     this.breakerLight = null;
     this.ledTimer = 0;
     this.unitBox = new THREE.BoxGeometry(1, 1, 1);
@@ -272,6 +273,7 @@ export class Level {
   // ---------- Per-frame effects ----------
 
   update(dt, t) {
+    if (this.rackGlow && this.rackGlow.visible) this.rackGlow.material.opacity = 0.17 + 0.1 * Math.sin(t * 3);
     for (const f of this.flickers) {
       const k = 1 - f.amp * flickerWave(t, f.phase);
       f.mat.color.copy(f.base).multiplyScalar(0.12 + 0.88 * k);

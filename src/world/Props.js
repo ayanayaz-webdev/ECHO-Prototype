@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { signMaterial, screenMaterial, makeRng } from './Materials.js';
-import { buildRifle } from '../weapons/RifleModel.js';
+import { M4 } from '../weapons/m4Config.js';
 
 // Rotation.y values that make a flat sign face a given direction.
 const FACE = { PZ: 0, NZ: Math.PI, PX: Math.PI / 2, NX: -Math.PI / 2 };
@@ -595,12 +595,17 @@ function armory(level, rand) {
   // Weapon lockers along the north wall
   for (const x of [4.2, 6.1, 8.0, 9.9]) level.solid(M.cabinet, 0.8, 1.95, 0.5, x, 0.98, -13.55);
 
-  // Weapon rack on the east wall with a rifle hanging on it
+  // Weapon rack on the east wall. Your uploaded rifle model is mounted on it once it has loaded
+  // (Gameplay.js adds it to level.rackMount). An amber glow behind it makes the pickup easy to spot.
   level.prim(M.metalDark, 0.1, 1.1, 1.6, 11.8, 1.3, -10);
-  const rifle = buildRifle(level.unitBox).group;
-  rifle.position.set(11.62, 1.35, -9.8);
-  level.group.add(rifle);
-  level.rackRifle = rifle;
+  level.rackMount = new THREE.Group();
+  level.rackMount.position.set(...M4.rack.pos);
+  level.group.add(level.rackMount);
+  const glowMat = new THREE.MeshBasicMaterial({
+    color: 0xffb347, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false,
+  });
+  level.rackGlow = level.prim(glowMat, 0.01, 0.5, 1.15, 11.738, 1.3, -10);
+  sign(level, signMaterial('M4A1 CARBINE', { w: 384, h: 80, border: '#ffb347', fg: '#ffd9a0' }), 1.1, 0.23, 11.84, 2.1, -10, FACE.NX);
 
   // Bench with ammunition crates
   level.solid(M.metal, 2.4, 0.9, 0.8, 6.5, 0.45, -7.2);

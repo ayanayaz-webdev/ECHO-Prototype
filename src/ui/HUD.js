@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 
+import { isTouch, debugFromUrl } from '../core/Device.js';
+
 const $ = (id) => document.getElementById(id);
 const _v = new THREE.Vector3();
 
@@ -14,7 +16,7 @@ export class HUD {
       'subtitle', 'subtitle-speaker', 'subtitle-text', 'prompt', 'progress', 'progress-label', 'progress-fill',
       'panel', 'panel-title', 'panel-lines', 'health', 'health-fill', 'ammo', 'ammo-name', 'ammo-count', 'credential',
       'center-msg', 'hitmarker', 'vignette', 'lockdown-tint', 'title-card', 'title-main', 'title-sub',
-      'death', 'retry', 'complete', 'complete-title', 'complete-mission', 'complete-items', 'complete-ending',
+      'btn-use', 'notify', 'crosshair', 'death', 'retry', 'complete', 'complete-title', 'complete-mission', 'complete-items', 'complete-ending',
       'complete-teaser', 'replay',
     ]) this.el[id] = $(id);
 
@@ -37,9 +39,13 @@ export class HUD {
     this.damageT = 0;
     this.hitT = 0;
     this.msgT = 0;
+    this.notifyT = 0;
     this.objective = null;
     this.lastAmmo = '';
     this.lastHealth = -1;
+    this.touch = isTouch;
+    if (this.touch) this.el.start.textContent = 'Tap to enter the facility';
+    if (debugFromUrl) this.toggleDebug(); // add ?debug=1 to the address to see FPS on a phone
   }
 
   // ---------- overlay / pause ----------
@@ -48,7 +54,7 @@ export class HUD {
   setLocked(locked, suppressOverlay = false) {
     this.el.overlay.classList.toggle('hidden', locked || suppressOverlay);
     if (locked) this.started = true;
-    else if (this.started) this.el.start.textContent = 'Paused. Click to resume';
+    else if (this.started) this.el.start.textContent = this.touch ? 'Paused. Tap to resume' : 'Paused. Click to resume';
   }
 
   toggleDebug() {
@@ -106,8 +112,15 @@ export class HUD {
 
   // ---------- prompts ----------
 
+  // Prompts that can be acted on start with "E" ("E — Recover Data", "Press E to collect weapon").
+  // On a phone there is no E key: the wording drops the key and the USE button appears instead.
   showPrompt(text) {
     const p = this.el.prompt;
+    const usable = !!text && /^(E — |Press E to )/.test(text);
+    if (this.touch && text) {
+      text = text.replace(/^E — /, '').replace(/^Press E to (.)/, (m, c) => c.toUpperCase());
+    }
+    if (this.touch) this.el['btn-use'].classList.toggle('show', usable);
     if (text) {
       if (p.textContent !== text) p.textContent = text;
       p.style.display = 'block';
@@ -147,6 +160,21 @@ export class HUD {
     this.msgT = seconds;
   }
 
+  // Small pickup message above the ammo counter.
+  notify(text, seconds = 3) {
+    this.el.notify.textContent = text;
+    this.el.notify.classList.add('show');
+    this.notifyT = seconds;
+  }
+
+  // The hip crosshair fades out while aiming through the optic.
+  setAds(on) {
+    if (on !== this.adsOn) {
+      this.adsOn = on;
+      this.el.crosshair.classList.toggle('ads', on);
+    }
+  }
+
   showTitle(title, sub, seconds = 4) {
     this.el['title-main'].textContent = title;
     this.el['title-sub'].textContent = sub || '';
@@ -171,10 +199,11 @@ export class HUD {
       return;
     }
     const txt = weapon.def.name + '|' + weapon.mag + '|' + weapon.reserve + '|' + weapon.state;
+    const tag = weapon.state === 'reloading' ? ' · reloading' : weapon.mag === 0 && weapon.reserve === 0 ? ' · no ammo' : '';
     if (txt === this.lastAmmo) return;
     this.lastAmmo = txt;
     a.style.display = 'flex';
-    this.el['ammo-name'].textContent = weapon.def.name;
+    this.el['ammo-name'].textContent = weapon.def.name + tag;
     this.el['ammo-count'].textContent = weapon.mag + ' / ' + weapon.reserve;
     a.classList.toggle('reloading', weapon.state === 'reloading');
   }
@@ -275,6 +304,7 @@ export class HUD {
     }
 
     if (this.msgT > 0 && (this.msgT -= dt) <= 0) this.el['center-msg'].classList.remove('show');
+    if (this.notifyT > 0 && (this.notifyT -= dt) <= 0) this.el.notify.classList.remove('show');
     if (this.damageT > 0 && (this.damageT -= dt) <= 0) this.el.vignette.style.opacity = '0';
     if (this.hitT > 0 && (this.hitT -= dt) <= 0) this.el.hitmarker.classList.remove('show');
   }

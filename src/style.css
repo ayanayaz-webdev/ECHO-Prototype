@@ -9,6 +9,8 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -190,6 +192,22 @@ html, body {
 }
 #center-msg.show { opacity: 1; }
 
+#crosshair { transition: opacity 0.15s; }
+#crosshair.ads { opacity: 0; }
+
+#notify {
+  position: absolute;
+  right: 32px; bottom: 96px;
+  padding: 6px 12px;
+  font-size: 15px;
+  text-align: right;
+  background: rgba(5, 8, 12, 0.7);
+  border-right: 2px solid var(--amber);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+#notify.show { opacity: 1; }
+
 #hitmarker {
   position: absolute;
   left: 50%; top: 50%;
@@ -302,4 +320,118 @@ html, body {
   color: #ff8a7a;
   font: 12px/1.4 Consolas, monospace;
   white-space: pre-wrap;
+}
+
+
+/* ================= Touch devices ================= */
+
+body.touch {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
+}
+
+.touch-help { display: none; }
+body.touch .touch-help { display: table; }
+body.touch p.touch-help { display: block; }
+body.touch .desktop-help { display: none; }
+.hint { color: var(--muted); font-size: 13px; }
+
+#touch, #rotate { display: none; }
+
+body.touch #touch {
+  position: fixed;
+  inset: 0;
+  display: block;
+  pointer-events: none;   /* only the zones and buttons below receive touches */
+  visibility: hidden;     /* shown while playing */
+  touch-action: none;
+}
+body.touch #touch.active { visibility: visible; }
+
+#joy-zone, #look-zone {
+  position: absolute;
+  top: 0; bottom: 0;
+  pointer-events: auto;
+  touch-action: none;
+}
+#joy-zone { left: 0; width: 45%; }
+#look-zone { left: 45%; right: 0; }
+
+#joy-base {
+  position: fixed;
+  width: 112px; height: 112px;
+  margin: -56px 0 0 -56px;
+  border: 2px solid rgba(127, 180, 214, 0.45);
+  border-radius: 50%;
+  background: rgba(127, 180, 214, 0.08);
+  display: none;
+  pointer-events: none;
+}
+#joy-base.on { display: block; }
+#joy-knob {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 48px; height: 48px;
+  margin: -24px 0 0 -24px;
+  border-radius: 50%;
+  background: rgba(201, 214, 226, 0.4);
+  border: 2px solid rgba(201, 214, 226, 0.7);
+}
+
+#touch button {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  border: 2px solid rgba(127, 180, 214, 0.6);
+  background: rgba(8, 14, 20, 0.5);
+  color: #d8e4ee;
+  font: 600 12px Bahnschrift, "Segoe UI", system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  padding: 0;
+}
+#touch button.down { background: rgba(127, 180, 214, 0.4); }
+
+#touch #btn-fire   { width: 92px; height: 92px; right: calc(28px + env(safe-area-inset-right)); bottom: calc(34px + env(safe-area-inset-bottom)); font-size: 15px; border-color: rgba(224, 120, 100, 0.8); }
+#touch #btn-ads    { width: 66px; height: 66px; right: calc(136px + env(safe-area-inset-right)); bottom: calc(28px + env(safe-area-inset-bottom)); }
+#touch #btn-ads.on { background: rgba(127, 180, 214, 0.45); }
+#touch #btn-reload { width: 62px; height: 62px; right: calc(40px + env(safe-area-inset-right)); bottom: calc(140px + env(safe-area-inset-bottom)); }
+#touch #btn-use    { width: 76px; height: 76px; right: calc(124px + env(safe-area-inset-right)); bottom: calc(104px + env(safe-area-inset-bottom)); display: none; border-color: var(--amber); color: var(--amber); font-size: 14px; }
+#touch #btn-use.show { display: flex; animation: usepulse 1.1s infinite; }
+@keyframes usepulse { 0%,100% { background: rgba(217, 164, 65, 0.15); } 50% { background: rgba(217, 164, 65, 0.4); } }
+#touch #btn-pause  { width: 46px; height: 46px; right: calc(14px + env(safe-area-inset-right)); top: calc(12px + env(safe-area-inset-top)); }
+#touch #btn-flash  { width: 46px; height: 46px; right: calc(70px + env(safe-area-inset-right)); top: calc(12px + env(safe-area-inset-top)); font-size: 11px; }
+
+/* HUD layout on phones (small landscape screens) */
+body.touch #objective { left: calc(16px + env(safe-area-inset-left)); top: calc(12px + env(safe-area-inset-top)); max-width: 250px; }
+body.touch #objective-title { font-size: 15px; }
+body.touch #objective-desc { font-size: 12px; }
+body.touch #objective-loc { font-size: 12px; }
+body.touch #health { left: calc(16px + env(safe-area-inset-left)); bottom: calc(14px + env(safe-area-inset-bottom)); width: 160px; }
+body.touch #credential { left: calc(16px + env(safe-area-inset-left)); bottom: calc(44px + env(safe-area-inset-bottom)); }
+body.touch #ammo { top: calc(66px + env(safe-area-inset-top)); right: calc(14px + env(safe-area-inset-right)); bottom: auto; }
+body.touch #ammo-count { font-size: 26px; }
+body.touch #notify { top: calc(120px + env(safe-area-inset-top)); right: calc(14px + env(safe-area-inset-right)); bottom: auto; }
+body.touch #subtitle { bottom: calc(10px + env(safe-area-inset-bottom)); font-size: 14px; max-width: 46vw; }
+body.touch #prompt { top: 58%; font-size: 15px; }
+body.touch #progress { top: 58%; }
+body.touch #panel { top: 14%; font-size: 12px; }
+body.touch #center-msg { font-size: 18px; }
+body.touch #title-main { font-size: 40px; }
+body.touch .screen, body.touch #overlay { overflow-y: auto; align-items: flex-start; padding: 18px 0; }
+body.touch .panel { gap: 12px; margin: auto; }
+body.touch .panel h1 { font-size: 44px; }
+body.touch .screen h2 { font-size: 30px; }
+body.touch #start, body.touch .screen button { padding: 14px 26px; font-size: 16px; }
+
+/* Portrait: ask the player to turn the phone */
+@media (orientation: portrait) {
+  body.touch #rotate {
+    position: fixed; inset: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: center;
+    background: #05070c; text-align: center; padding: 30px; font-size: 18px;
+  }
 }
